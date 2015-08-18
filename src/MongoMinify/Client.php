@@ -21,7 +21,6 @@ class Client
 
         // Link timeouts
         Cursor::$timeout = \MongoCursor::$timeout;
-        \MongoCursor::$timeout =& Cursor::$timeout;
 
         // Parse MongoDB Path Info
         if (! empty($options['db'])) {
