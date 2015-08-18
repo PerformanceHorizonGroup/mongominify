@@ -18,7 +18,7 @@ class Collection
     /**
      * Initialize
      */
-    public function __construct($name, $db)
+    public function __construct($name, Db $db)
     {
         $this->name = $name;
         $this->db = $db;
@@ -209,30 +209,40 @@ class Collection
         foreach ($array as $key => $value) {
             $subkey = ($namespace ? $namespace . '.' : '') . $key;
             $this->schema[$subkey] = $value;
+            if (! isset($value['short'])) {
+                if ($key === '*') {
+                    $value['short'] = $this->schema_index[$namespace] . '.*';
+                    $namespace = '';
+                } else {
+                    $value['short'] = $key;
+                }
+            }
+            $short = $this->getShort($namespace);
+            $parent_short = $short ? $short . '.' : '';
+            $this->schema_index[$subkey] = $value['short'];
+            $this->schema_reverse_index[$parent_short . $value['short']] = $subkey;
             if (isset($value['subset'])) {
                 $this->setSchemaArray($value['subset'], $subkey);
                 unset($value['subset']);
             }
-            if (isset($value['short'])) {
-                $short = $this->getShort($namespace);
-                $parent_short = $short ? $short . '.' : '';
-                $this->schema_index[$subkey] = $value['short'];
-                $this->schema_reverse_index[$parent_short . $value['short']] = $subkey;
-            }
         }
     }
+
 
     /**
      * Get short definitions based on full key
      */
     public function getShort($full)
     {
-        if (isset($this->schema[$full])) {
+        if (strpos($full, '*') !== false) {
+            return $this->schema_index[substr($full, 0, -2)] . '.*';
+        }
+        if (isset($this->schema[$full]['short'])) {
             return $this->schema[$full]['short'];
         }
-
         return $full;
     }
+
 
     /**
      * Batch Insert

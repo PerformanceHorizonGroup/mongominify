@@ -104,9 +104,7 @@ class Query
 
     /**
      * As dot syntax for index ensuring
-     * TODO: This is a quick hack to get indexes working with embedded document syntax
      */
-    private $dotSyntax = array();
     public function asDotSyntax()
     {
         $dotSyntax = $this->applyDotSyntax($this->compressed);

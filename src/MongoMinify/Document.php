@@ -173,7 +173,11 @@ class Document
         $doc = array();
         foreach ($document as $key => $value) {
             $namespace = ($parent ? $parent . '.' : '') . $key;
-            if (is_numeric($key)) {
+            if (isset($this->collection->schema_index[$parent . '.*'])) {
+                $namespace = $parent . '.*';
+                $value = $this->applyCompression($value, $namespace);
+                $namespace = ($parent ? $parent . '.' : '') . $key;
+            } elseif (is_numeric($key)) {
                 $namespace = $parent;
                 $value = $this->applyCompression($value, $namespace);
                 $namespace = ($parent ? $parent . '.' : '') . $key;
@@ -212,6 +216,7 @@ class Document
         if (is_array($document)) {
 
             // Integar based arrays don't have key decompression
+            /*
             if (array_key_exists(0, $document)) {
                 foreach ($document as $key => $value) {
                     $document[$key] = $this->applyDecompression($value, $parent);
@@ -219,11 +224,15 @@ class Document
 
                 return $document;
             }
+            */
 
             // Standard document traversal
             foreach ($document as $key => $value) {
                 $namespace = ($parent ? $parent . '.' : '') . $key;
-                if (is_numeric($key)) {
+                if (isset($this->collection->schema_reverse_index[$parent . '.*'])) {
+                    $value = $this->applyDecompression($value, $parent . '.*');
+                    $document[$key] = $value;
+                } elseif (is_numeric($key)) {
                     $value = $this->applyDecompression($value, $parent);
                     $document[$key] = $value;
                 } elseif (isset($this->collection->schema_reverse_index[$namespace])) {
@@ -250,7 +259,6 @@ class Document
 
     /**
      * As dot syntax for index ensuring
-     * TODO: This is a quick hack to get indexes working with embedded document syntax
      */
     public function asDotSyntax()
     {

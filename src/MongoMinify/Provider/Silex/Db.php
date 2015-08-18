@@ -1,8 +1,10 @@
 <?php
 
-namespace MongoMinify\Silex;
+namespace MongoMinify\Provider\Silex;
 
-class Db extends \MongoMinify\Db
+use MongoMinify\Db as Base;
+
+class Db extends Base
 {
 
     private $app;
